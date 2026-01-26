@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRead LMS - Complete Master Flowchart</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+        .container {
+            max-width: 100%;
+            height: 95vh;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 15px 30px;
+            text-align: center;
+            border-bottom: 4px solid #00bcd4;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .download-btn {
+            background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .download-btn:hover {
+            background: linear-gradient(135deg, #0097a7 0%, #00838f 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        .download-btn:active {
+            transform: translateY(0);
+        }
+        .download-btn i {
+            font-size: 1em;
+        }
+        .header h1 { 
+            font-size: 1.8em; 
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .header p { 
+            font-size: 0.9em; 
+            opacity: 0.95; 
+        }
+        .mermaid-container {
+            position: relative;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            flex-grow: 1;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+        .zoom-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .zoom-controls button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 4px;
+            background: #1e3c72;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .zoom-controls button:hover {
+            background: #00bcd4;
+        }
+        .mermaid-scroll-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            cursor: grab;
+            padding: 50px;
+        }
+        .mermaid-scroll-wrapper.dragging {
+            cursor: grabbing;
+        }
+        /* Legend Styles */
+        .legend-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            border-left: 5px solid #00bcd4;
+            max-width: 250px;
+        }
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1e3c72;
+            font-size: 0.9em;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 0.8em;
+            color: #333;
+        }
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 8px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🏛️ QRead LMS - Master Architecture</h1>
+                <p>Full System: Landing → Auth → Dashboards (with Sidebars) → Logic</p>
+            </div>
+            <div class="header-controls">
+                <button onclick="downloadDiagram('png')" class="download-btn" title="Download as PNG (High Quality)">
+                    <i class="fas fa-image"></i> PNG
+                </button>
+                <button onclick="downloadDiagram('svg')" class="download-btn" title="Download as SVG (Vector)">
+                    <i class="fas fa-file-code"></i> SVG
+                </button>
+                <div style="font-size: 0.9em; background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px;">
+                    Final Version
+                </div>
+            </div>
+        </div>
+
+        <div class="mermaid-container">
+            <div class="zoom-controls">
+                <button onclick="zoomIn()" title="Zoom In">+</button>
+                <button onclick="zoomOut()" title="Zoom Out">−</button>
+                <button onclick="resetZoom()" title="Reset">↺</button>
+            </div>
+
+            <div class="legend-overlay">
+                <div class="legend-title">Flow Key</div>
+                <div class="legend-item"><div class="legend-color" style="background:#fff3e0; border-color:#ff9800"></div>Landing & Public</div>
+                <div class="legend-item"><div class="legend-color" style="background:#fce4ec; border-color:#e91e63"></div>Auth & Login</div>
+                <div class="legend-item"><div class="legend-color" style="background:#e8f5e9; border-color:#2e7d32"></div>Admin & Librarian</div>
+                <div class="legend-item"><div class="legend-color" style="background:#e3f2fd; border-color:#1565c0"></div>Student Actions</div>
+                <div class="legend-item"><div class="legend-color" style="background:#fff9c4; border-color:#fbc02d"></div>Logic & Decisions</div>
+                <div class="legend-item"><div class="legend-color" style="background:#37474f; border-color:#000; color:white"></div>Databases</div>
+            </div>
+
+            <div class="mermaid-scroll-wrapper">
+                <div class="mermaid">
+                    %%{init: {'flowchart': {'curve': 'stepAfter', 'htmlLabels': true, 'nodeSpacing': 40, 'rankSpacing': 60}}}%%
+                    graph TD
+                        %% --- SECTION 1: LANDING PAGE (Exact Structure from Image) ---
+                        subgraph Landing_Page ["🌐 Landing Page Architecture"]
+                            direction TB
+                            INDEX["index.php<br/>Landing Root"]
+                            
+                            %% Landing Branches
+                            INDEX --> NAV["Header Navigation<br/>Logo, Menu, Sign In CTA"]
+                            INDEX --> HERO["Hero Section<br/>Title, Desc, CTA Button"]
+                            INDEX --> FEAT["Features<br/>QR, Catalog, Users, Analytics"]
+                            INDEX --> ABOUT["About<br/>Mission, Library Image"]
+                            INDEX --> TEST["Testimonials<br/>Librarian Staff"]
+                            INDEX --> GAL["Gallery<br/>Carousel, Modals"]
+                            INDEX --> FOOT["Footer<br/>Socials, Copyright"]
+                            
+                            %% Contact Form Logic
+                            INDEX --> CONTACT["📧 Contact Form"]
+                            CONTACT --> C_IN["Inputs:<br/>Name, Email, Message"]
+                            C_IN --> C_SUB["Submit"]
+                            C_SUB --> C_VAL{"Valid?"}
+                            C_VAL -->|No| C_ERR["❌ Show Error"]
+                            C_ERR --> CONTACT
+                            C_VAL -->|Yes| C_INS["INSERT INTO<br/>LMS.message"]
+                            C_INS --> C_OK["✅ Message Sent"]
+                        end
+
+                        %% --- SECTION 2: AUTHENTICATION ---
+                        subgraph Auth_System ["🔐 Authentication System"]
+                            direction TB
+                            LOGIN_PG["login.php<br/>Auth Interface"]
+                            
+                            %% Connect Landing to Login
+                            NAV --> LOGIN_PG
+                            HERO --> LOGIN_PG
+                            
+                            %% Auth Decision
+                            LOGIN_PG --> AUTH_DEC{"Login or<br/>Register?"}
+                            
+                            %% Login Path
+                            AUTH_DEC -->|Login| L_FORM["Input: RollNo & Pass"]
+                            L_FORM --> L_QRY["SELECT FROM LMS.user"]
+                            L_QRY --> L_CHECK{"Pass Match?"}
+                            L_CHECK -->|No| L_ERR["❌ Invalid"]
+                            L_ERR --> LOGIN_PG
+                            L_CHECK -->|Yes| L_SESS["Set Session<br/>$_SESSION['Type']"]
+                            
+                            %% Register Path
+                            AUTH_DEC -->|Register| R_FORM["Input Details"]
+                            R_FORM --> R_VAL["Validate Inputs"]
+                            R_VAL --> R_DB1["INSERT INTO<br/>LMS.user"]
+                            R_DB1 --> R_DB2["INSERT INTO<br/>qrcodedb.student"]
+                            R_DB2 --> R_OK["✅ Registered"]
+                            R_OK --> LOGIN_PG
+                        end
+
+                        %% --- SECTION 3: DASHBOARDS & SIDEBARS ---
+                        subgraph Dashboards ["🖥️ User Dashboards & Sidebars"]
+                            direction TB
+                            %% Routing
+                            L_SESS --> ROLE{"User Type?"}
+                            
+                            %% ADMIN DASHBOARD
+                            ROLE -->|Admin| ADMIN_D["👨‍💼 Admin Dashboard"]
+                            ADMIN_D --> A_METRICS["📊 Metrics"]
+                            
+                            %% Admin Sidebar Navigation
+                            ADMIN_D --> A_SIDE["Admin Sidebar Menu"]
+                            A_SIDE --> A_HOME["🏠 Home"]
+                            A_SIDE --> A_VISIT["� Visit Hours"]
+                            A_SIDE --> A_MSG["� Messages"]
+                            A_SIDE --> A_RECV["� Receive Message"]
+                            A_SIDE --> A_MENU2["� Manage Students"]
+                            A_SIDE --> A_BOOKS["� All Books"]
+                            A_SIDE --> A_ADDBOOK["➕ Add Books"]
+                            A_SIDE --> A_MENU3["📋 Issue/Return Requests"]
+                            A_SIDE --> A_ISSUED["📚 Issued Books"]
+                            A_SIDE --> A_PREV["� Previously Borrowed"]
+                            A_SIDE --> A_DEL["🗑️ Deletion History"]
+                            A_SIDE --> A_EDIT["✏️ Edit Admin"]
+
+                            %% LIBRARIAN DASHBOARD
+                            ROLE -->|Librarian| LIB_D["� Librarian Dashboard"]
+                            LIB_D --> L_METRICS["� Metrics"]
+                            
+                            %% Librarian Sidebar Navigation
+                            LIB_D --> L_SIDE["Librarian Sidebar Menu"]
+                            L_SIDE --> L_HOME["🏠 Home"]
+                            L_SIDE --> L_VISIT["� Visit Hours"]
+                            L_SIDE --> L_MSG["💬 Messages"]
+                            L_SIDE --> L_RECV["� Receive Message"]
+                            L_SIDE --> L_MENU2["� Manage Students"]
+                            L_SIDE --> L_BOOKS["📖 All Books"]
+                            L_SIDE --> L_ADDBOOK["➕ Add Books"]
+                            L_SIDE --> L_MENU3["📋 Issue/Return Requests"]
+                            L_SIDE --> L_ISSUED["� Issued Books"]
+                            L_SIDE --> L_PREV["� Previously Borrowed"]
+                            L_SIDE --> L_DEL["�️ Deletion History"]
+
+                            %% STUDENT DASHBOARD
+                            ROLE -->|Student| STUD_D["👨‍🎓 Student Dashboard"]
+                            STUD_D --> S_PROFILE["👤 Profile Metrics"]
+                            
+                            %% Student Sidebar Navigation
+                            STUD_D --> S_SIDE["Student Sidebar Menu"]
+                            S_SIDE --> S_HOME["🏠 Home"]
+                            S_SIDE --> S_BROWSE["📖 Browse Books"]
+                            S_SIDE --> S_ISSUE["📤 Request Issue"]
+                            S_SIDE --> S_RENEW["🔄 Request Renewal"]
+                            S_SIDE --> S_RETURN["↩️ Request Return"]
+                            S_SIDE --> S_HISTORY["📜 View History"]
+                            S_SIDE --> S_ISSUED["📚 Issued Books"]
+                            S_SIDE --> S_PREV["📜 Previously Borrowed"]
+                            S_SIDE --> S_MSG["💬 Messages"]
+                            S_SIDE --> S_RECV["📥 Receive Message"]
+                            S_SIDE --> S_EDIT["✏️ Edit Profile"]
+                        end
+
+                        %% --- SECTION 4: DETAILED OPERATIONS (Linked from Sidebars) ---
+                        
+                        %% Book Management Logic (Admin/Lib)
+                        subgraph Book_Ops ["📖 Book Operations"]
+                            A_BOOKS & L_BOOKS --> B_VIEW["SELECT FROM<br/>LMS.book"]
+                            A_ADDBOOK & L_ADDBOOK --> B_ADD["INSERT INTO<br/>LMS.book"]
+                            B_VIEW --> B_ACT{"Book Action?"}
+                            B_ACT -->|Edit| B_EDIT["UPDATE<br/>LMS.book"]
+                            B_ACT -->|Delete| B_DEL["UPDATE is_deleted=1<br/>INSERT INTO LMS.tbl"]
+                        end
+
+                        %% Student Issue/Return/Renew Logic
+                        subgraph Issue_System ["🔄 Issue & Return Logic"]
+                            %% Student Requests
+                            S_ISSUE --> REQ_I["INSERT INTO<br/>LMS.record (Pending)"]
+                            S_RETURN --> REQ_R["INSERT INTO<br/>LMS.return (Pending)"]
+                            S_RENEW --> REQ_N["INSERT INTO<br/>LMS.renew (Pending)"]
+                            
+                            %% Admin/Librarian Processing
+                            A_MENU3 & L_MENU3 --> A_REV["📋 Review Requests"]
+                            A_REV --> A_DEC{"Approve?"}
+                            
+                            %% Approval Logic
+                            A_DEC -->|Yes-Issue| OK_I["UPDATE record<br/>Date_of_Issue<br/>Copies -1"]
+                            A_DEC -->|Yes-Return| OK_R["UPDATE return<br/>Date_of_Return<br/>Copies +1"]
+                            A_DEC -->|Yes-Renew| OK_N["UPDATE renew<br/>Due_Date +14"]
+                            
+                            %% Rejection Logic
+                            A_DEC -->|No| REJ["DELETE Request<br/>Notify Student"]
+                        end
+
+                        %% Student View History & Books
+                        subgraph Student_Views ["� Student Views"]
+                            S_HISTORY --> H_VIEW["SELECT FROM<br/>LMS.record"]
+                            S_ISSUED --> I_VIEW["SELECT FROM<br/>LMS.record<br/>WHERE Date_of_Return IS NULL"]
+                            S_PREV --> P_VIEW["SELECT FROM<br/>LMS.record<br/>WHERE Date_of_Return IS NOT NULL"]
+                        end
+
+                        %% Admin/Librarian View Reports
+                        subgraph Report_Views ["📈 Report Views"]
+                            A_ISSUED & L_ISSUED --> AI_VIEW["SELECT FROM<br/>LMS.record<br/>WHERE Date_of_Return IS NULL"]
+                            A_PREV & L_PREV --> AP_VIEW["SELECT FROM<br/>LMS.record<br/>WHERE Date_of_Return IS NOT NULL"]
+                            A_DEL & L_DEL --> AD_VIEW["SELECT FROM<br/>LMS.tbl<br/>(Deletion Log)"]
+                        end
+
+                        %% Messaging System
+                        subgraph Messaging ["💬 Messaging System"]
+                            A_MSG & L_MSG & S_MSG --> M_SEND["INSERT INTO<br/>LMS.message"]
+                            A_RECV & L_RECV & S_RECV --> M_RECV["SELECT FROM<br/>LMS.message"]
+                            M_SEND --> M_OK["✅ Message Sent"]
+                            M_RECV --> M_DISPLAY["Display Messages"]
+                        end
+
+                        %% Student Management
+                        subgraph Student_Mgmt ["👥 Student Management"]
+                            A_MENU2 & L_MENU2 --> SM_VIEW["SELECT FROM<br/>LMS.user<br/>WHERE Type='Student'"]
+                            SM_VIEW --> SM_ACT{"Action?"}
+                            SM_ACT -->|Edit| SM_EDIT["UPDATE LMS.user"]
+                            SM_ACT -->|Delete| SM_DEL["UPDATE is_deleted=1"]
+                        end
+
+                        %% Admin Edit Profile
+                        subgraph Admin_Edit ["✏️ Admin Operations"]
+                            A_EDIT --> AE_VIEW["SELECT FROM<br/>LMS.user<br/>WHERE RollNo=Admin"]
+                            AE_VIEW --> AE_EDIT["UPDATE LMS.user<br/>(Name, Email, etc)"]
+                        end
+
+                        %% QR Attendance System
+                        subgraph QR_System ["📱 QR Attendance"]
+                            A_VISIT & L_VISIT --> QR_PAGE["qr/index.php"]
+                            QR_PAGE --> SCAN["🎥 QR Scanner"]
+                            SCAN --> Q_DEC{"First Scan<br/>Today?"}
+                            
+                            Q_DEC -->|Yes| Q_IN["INSERT attendance<br/>TimeIn = NOW()"]
+                            Q_IN --> Q_MSG1["✅ Welcome Message"]
+                            
+                            Q_DEC -->|No| Q_OUT["UPDATE attendance<br/>TimeOut = NOW()"]
+                            Q_OUT --> Q_MSG2["👋 Goodbye Message"]
+                        end
+
+                        %% --- SECTION 5: DATABASES ---
+                        subgraph Database_Layer ["💾 Database Layer"]
+                            DB_LMS[("LMS Database<br/>(user, book, record,<br/>message, renew)")]
+                            DB_QR[("qrcodedb<br/>(student, attendance)")]
+                        end
+
+                        %% --- DATABASE CONNECTIONS ---
+                        C_INS --> DB_LMS
+                        L_QRY --> DB_LMS
+                        R_DB1 --> DB_LMS
+                        R_DB2 --> DB_QR
+                        B_ADD --> DB_LMS
+                        B_EDIT --> DB_LMS
+                        B_DEL --> DB_LMS
+                        REQ_I --> DB_LMS
+                        REQ_R --> DB_LMS
+                        REQ_N --> DB_LMS
+                        OK_I --> DB_LMS
+                        OK_R --> DB_LMS
+                        OK_N --> DB_LMS
+                        REJ --> DB_LMS
+                        Q_IN --> DB_QR
+                        Q_OUT --> DB_QR
+
+                        %% --- STYLING ---
+                        classDef landing fill:#fff3e0,stroke:#ff9800,stroke-width:2px;
+                        classDef auth fill:#fce4ec,stroke:#e91e63,stroke-width:2px;
+                        classDef admin fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+                        classDef student fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+                        classDef logic fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+                        classDef db fill:#37474f,stroke:#000,stroke-width:2px,color:#fff;
+
+                        class INDEX,NAV,HERO,FEAT,ABOUT,TEST,GAL,FOOT,CONTACT,C_IN,C_SUB landing;
+                        class LOGIN_PG,L_FORM,R_FORM auth;
+                        class ADMIN_D,LIB_D,A_METRICS,L_METRICS,A_SIDE,L_SIDE,A_HOME,A_VISIT,A_MSG,A_RECV,A_MENU2,A_BOOKS,A_ADDBOOK,A_MENU3,A_ISSUED,A_PREV,A_DEL,A_EDIT,L_HOME,L_VISIT,L_MSG,L_RECV,L_MENU2,L_BOOKS,L_ADDBOOK,L_MENU3,L_ISSUED,L_PREV,L_DEL admin;
+                        class STUD_D,S_PROFILE,S_SIDE,S_HOME,S_BROWSE,S_ISSUE,S_RENEW,S_RETURN,S_HISTORY,S_ISSUED,S_PREV,S_MSG,S_RECV,S_EDIT student;
+                        class AUTH_DEC,L_CHECK,ROLE,B_ACT,S_REQ,A_DEC,Q_DEC,C_VAL,SM_ACT logic;
+                        class DB_LMS,DB_QR db;
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid with custom settings for large diagrams
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: false, // Allow horizontal scrolling
+                htmlLabels: true,
+                curve: 'stepAfter', // Cleaner lines for large flows
+                nodeSpacing: 50,
+                rankSpacing: 60
+            },
+            securityLevel: 'loose'
+        });
+
+        // Zoom and Drag Logic
+        const wrapper = document.querySelector('.mermaid-scroll-wrapper');
+        let zoom = 1;
+        const zoomStep = 0.1;
+        const maxZoom = 3;
+        const minZoom = 0.2;
+        
+        let isDragging = false;
+        let startX, startY, scrollLeft, scrollTop;
+
+        function updateZoom() {
+            const diagram = document.querySelector('.mermaid');
+            if(diagram) {
+                diagram.style.transform = `scale(${zoom})`;
+                diagram.style.transformOrigin = '0 0';
+                // Adjust container size to allow scrolling to the zoomed edges
+                const width = diagram.getBoundingClientRect().width;
+                const height = diagram.getBoundingClientRect().height;
+            }
+        }
+
+        function zoomIn() {
+            if(zoom < maxZoom) {
+                zoom += zoomStep;
+                updateZoom();
+            }
+        }
+
+        function zoomOut() {
+            if(zoom > minZoom) {
+                zoom -= zoomStep;
+                updateZoom();
+            }
+        }
+
+        function resetZoom() {
+            zoom = 1;
+            updateZoom();
+            wrapper.scrollLeft = 0;
+            wrapper.scrollTop = 0;
+        }
+
+        // Drag Scrolling Logic
+        wrapper.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            wrapper.classList.add('dragging');
+            startX = e.pageX - wrapper.offsetLeft;
+            startY = e.pageY - wrapper.offsetTop;
+            scrollLeft = wrapper.scrollLeft;
+            scrollTop = wrapper.scrollTop;
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+            isDragging = false;
+            wrapper.classList.remove('dragging');
+        });
+
+        wrapper.addEventListener('mouseup', () => {
+            isDragging = false;
+            wrapper.classList.remove('dragging');
+        });
+
+        wrapper.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const x = e.pageX - wrapper.offsetLeft;
+            const y = e.pageY - wrapper.offsetTop;
+            const walkX = (x - startX) * 1.5; // Scroll speed multiplier
+            const walkY = (y - startY) * 1.5;
+            wrapper.scrollLeft = scrollLeft - walkX;
+            wrapper.scrollTop = scrollTop - walkY;
+        });
+
+        // Ctrl + Wheel Zoom
+        wrapper.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                if (e.deltaY < 0) zoomIn();
+                else zoomOut();
+            }
+        });
+
+        // ===== DOWNLOAD DIAGRAM FUNCTIONS =====
+        window.downloadDiagram = function(format) {
+            try {
+                const svgElement = document.querySelector('.mermaid svg');
+                
+                if (!svgElement) {
+                    alert('Diagram not ready. Please wait a moment and try again.');
+                    return;
+                }
+
+                if (format === 'svg') {
+                    downloadSVG(svgElement);
+                } else if (format === 'png') {
+                    downloadPNG(svgElement);
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Error initiating download. Please try again.');
+            }
+        };
+
+        function downloadSVG(svgElement) {
+            try {
+                // Clone the SVG to avoid modifying the original
+                const clonedSvg = svgElement.cloneNode(true);
+                
+                // Get dimensions
+                const bbox = svgElement.getBBox();
+                const padding = 20;
+                
+                // Set proper dimensions
+                clonedSvg.setAttribute('width', bbox.width + (padding * 2));
+                clonedSvg.setAttribute('height', bbox.height + (padding * 2));
+                clonedSvg.setAttribute('viewBox', `${bbox.x - padding} ${bbox.y - padding} ${bbox.width + (padding * 2)} ${bbox.height + (padding * 2)}`);
+                
+                // Convert to string
+                const svgString = new XMLSerializer().serializeToString(clonedSvg);
+                
+                // Create blob with proper encoding
+                const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create and trigger download
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'QRead-LMS-Flowchart-' + new Date().toISOString().split('T')[0] + '.svg';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                
+                // Trigger click
+                link.click();
+                
+                // Cleanup after a short delay
+                setTimeout(function() {
+                    try {
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    } catch (e) {
+                        console.log('Cleanup error (non-critical):', e);
+                    }
+                }, 500);
+                
+                console.log('SVG download initiated successfully');
+            } catch (error) {
+                console.error('SVG download error:', error);
+                alert('Error downloading SVG: ' + error.message);
+            }
+        }
+
+        function downloadPNG(svgElement) {
+            try {
+                const bbox = svgElement.getBBox();
+                const padding = 40;
+                const width = bbox.width + (padding * 2);
+                const height = bbox.height + (padding * 2);
+                
+                // Create canvas with high DPI for quality
+                const canvas = document.createElement('canvas');
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    throw new Error('Could not get canvas context');
+                }
+                
+                ctx.scale(dpr, dpr);
+                
+                // Set white background
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, width, height);
+                
+                // Convert SVG to image
+                const svgString = new XMLSerializer().serializeToString(svgElement);
+                
+                // Encode SVG to base64
+                let svg64;
+                try {
+                    svg64 = btoa(unescape(encodeURIComponent(svgString)));
+                } catch (e) {
+                    // Fallback for special characters
+                    svg64 = btoa(svgString);
+                }
+                
+                const image64 = 'data:image/svg+xml;base64,' + svg64;
+                
+                const img = new Image();
+                
+                img.onload = function() {
+                    try {
+                        ctx.drawImage(img, padding, padding);
+                        
+                        // Convert canvas to PNG blob
+                        canvas.toBlob(function(blob) {
+                            if (!blob) {
+                                throw new Error('Failed to create blob');
+                            }
+                            
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = 'QRead-LMS-Flowchart-' + new Date().toISOString().split('T')[0] + '.png';
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
+                            
+                            // Trigger click
+                            link.click();
+                            
+                            // Cleanup after a short delay
+                            setTimeout(function() {
+                                try {
+                                    document.body.removeChild(link);
+                                    URL.revokeObjectURL(url);
+                                } catch (e) {
+                                    console.log('Cleanup error (non-critical):', e);
+                                }
+                            }, 500);
+                            
+                            console.log('PNG download initiated successfully');
+                        }, 'image/png', 1.0);
+                    } catch (error) {
+                        console.error('Canvas drawing error:', error);
+                        alert('Error processing PNG. Trying SVG instead...');
+                        downloadSVG(svgElement);
+                    }
+                };
+                
+                img.onerror = function() {
+                    console.error('Image load error');
+                    alert('PNG conversion failed. Downloading as SVG instead...');
+                    downloadSVG(svgElement);
+                };
+                
+                img.onabort = function() {
+                    console.error('Image load aborted');
+                    alert('PNG conversion aborted. Downloading as SVG instead...');
+                    downloadSVG(svgElement);
+                };
+                
+                // Set image source
+                img.src = image64;
+                
+            } catch (error) {
+                console.error('PNG download error:', error);
+                alert('Error downloading PNG: ' + error.message + '. Trying SVG instead...');
+                downloadSVG(svgElement);
+            }
+        }
+    </script>
+</body>
+</html>
