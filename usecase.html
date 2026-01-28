@@ -616,7 +616,7 @@
         // --- Download ---
         window.downloadDiagram = function(format) {
             const svgElement = document.querySelector('.mermaid svg');
-            if (!svgElement) { alert('Diagram loading...'); return; }
+            if (!svgElement) { alert('Diagram not ready. Please wait.'); return; }
 
             const bbox = svgElement.getBBox();
             const width = bbox.width + 40;
@@ -632,12 +632,43 @@
             const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
             const url = URL.createObjectURL(blob);
 
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `qread-usecase.${format}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            if(format === 'svg') {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'qread-usecase.svg';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } else if(format === 'png') {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const scale = 2;
+                    canvas.width = width * scale;
+                    canvas.height = height * scale;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.scale(scale, scale);
+                    ctx.drawImage(img, 0, 0);
+                    
+                    canvas.toBlob(pngBlob => {
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(pngBlob);
+                        a.download = 'qread-usecase.png';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(a.href);
+                    }, 'image/png');
+                };
+                img.onerror = () => {
+                    alert('Failed to convert SVG to PNG. Try downloading as SVG instead.');
+                    URL.revokeObjectURL(url);
+                };
+                img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+            }
         };
     </script>
 </body>
