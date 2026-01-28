@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QRead LMS - Master Architecture</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338ca;
+            --accent: #06b6d4;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--dark);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            padding: 20px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- Main Layout --- */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+        }
+
+        /* --- Header --- */
+        .header {
+            padding: 16px 32px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .header-title h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-controls { display: flex; gap: 12px; align-items: center; }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-secondary { background: white; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-secondary:hover { background: #f8fafc; color: var(--dark); border-color: #cbd5e1; }
+
+        .badge {
+            background: #e0e7ff;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid #c7d2fe;
+        }
+
+        /* --- Canvas --- */
+        .canvas-wrapper {
+            flex-grow: 1;
+            position: relative;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow: hidden; 
+            touch-action: none; 
+            cursor: grab;
+        }
+        
+        .canvas-wrapper:active { cursor: grabbing; }
+
+        .pan-zoom-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-origin: 0 0; 
+            transform: translateZ(0); 
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* --- Floating Controls --- */
+        .floating-controls {
+            position: absolute;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 8px;
+            border: var(--glass-border);
+            z-index: 50;
+        }
+
+        .control-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .control-btn:hover { background: #f1f5f9; color: var(--primary); }
+
+        /* --- Legend Styles --- */
+        .legend-card {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 260px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            border: var(--glass-border);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 40;
+        }
+
+        .legend-card.collapsed {
+            width: auto;
+            height: auto;
+        }
+
+        .legend-header {
+            padding: 12px 16px;
+            background: rgba(248, 250, 252, 0.8);
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .legend-title { font-size: 0.9rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+        
+        .legend-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            color: #64748b;
+        }
+
+        .legend-toggle i {
+            font-size: 1.1rem;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .legend-header:hover .legend-toggle {
+            background-color: rgba(0,0,0,0.05);
+            color: var(--primary);
+        }
+
+        .legend-card.collapsed .legend-toggle i { transform: rotate(90deg); }
+        .legend-card.collapsed .legend-body { display: none; }
+        .legend-card.collapsed .legend-title span { display: none; }
+
+        .legend-body { padding: 16px; }
+
+        .legend-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 0.85rem; color: #475569; font-weight: 500; }
+        .legend-item:last-child { margin-bottom: 0; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 4px; margin-right: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.show { display: flex; opacity: 1; }
+
+        .modal-card {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.show .modal-card { transform: translateY(0); }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .modal-header h2 { font-size: 1.2rem; font-weight: 700; color: var(--dark); }
+        .modal-close { border: none; background: none; font-size: 1.5rem; color: #64748b; cursor: pointer; }
+        .modal-content { padding: 24px; max-height: 80vh; overflow-y: auto; color: #334155; line-height: 1.6; }
+
+        /* --- Mobile --- */
+        @media (max-width: 768px) {
+            .app-container { border-radius: 0; border: none; }
+            .header { padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+            .header-controls { width: 100%; overflow-x: auto; padding-bottom: 4px; }
+            .legend-card { top: auto; bottom: 80px; right: 16px; width: auto; min-width: 150px; }
+            .header-controls .badge { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="header-title">
+                <h1><i class="fas fa-sitemap" style="color: var(--primary);"></i> QRead LMS</h1>
+                <p>Master Architecture Flow</p>
+            </div>
+            <div class="header-controls">
+                <span class="badge">Live View</span>
+                <button onclick="openModal()" class="btn btn-primary"><i class="fas fa-info-circle"></i> Info</button>
+                <button onclick="downloadDiagram('png')" class="btn btn-secondary"><i class="fas fa-download"></i> PNG</button>
+                <a href="index.html" class="btn btn-secondary" style="color: #ef4444; border-color: #fca5a5;"><i class="fas fa-times"></i> Exit</a>
+            </div>
+        </header>
+
+        <div class="canvas-wrapper" id="canvasContainer">
+            <div class="floating-controls">
+                <button class="control-btn" onclick="zoomOut()"><i class="fas fa-minus"></i></button>
+                <button class="control-btn" onclick="resetView()"><i class="fas fa-compress-arrows-alt"></i></button>
+                <button class="control-btn" onclick="zoomIn()"><i class="fas fa-plus"></i></button>
+            </div>
+
+            <div class="legend-card" id="legendCard">
+                <div class="legend-header" onclick="toggleLegend()">
+                    <div class="legend-title"><i class="fas fa-layer-group"></i> <span>Layers</span></div>
+                    <div class="legend-toggle"><i class="fas fa-bars"></i></div>
+                </div>
+                <div class="legend-body">
+                    <div class="legend-item"><div class="legend-dot" style="background:#fff7ed; border:1px solid #ea580c"></div> Landing & Public</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#fdf2f8; border:1px solid #db2777"></div> Authentication</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#dcfce7; border:1px solid #16a34a"></div> Admin/Lib Dashboard</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#dbeafe; border:1px solid #2563eb"></div> Student Dashboard</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#fefce8; border:1px solid #ca8a04"></div> Logic & Decisions</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#334155; border:1px solid #0f172a"></div> Database</div>
+                </div>
+            </div>
+
+            <div class="pan-zoom-container" id="panZoomArea">
+                <div class="mermaid">
+                    %%{init: {'flowchart': {'curve': 'stepAfter', 'htmlLabels': true, 'nodeSpacing': 50, 'rankSpacing': 60}}}%%
+                    graph TD
+                        %% --- STYLING ---
+                        classDef landing fill:#fff7ed,stroke:#ea580c,stroke-width:2px;
+                        classDef auth fill:#fdf2f8,stroke:#db2777,stroke-width:2px;
+                        classDef admin fill:#dcfce7,stroke:#16a34a,stroke-width:2px;
+                        classDef student fill:#dbeafe,stroke:#2563eb,stroke-width:2px;
+                        classDef logic fill:#fefce8,stroke:#ca8a04,stroke-width:2px;
+                        classDef db fill:#334155,stroke:#0f172a,stroke-width:2px,color:#fff;
+
+                        %% --- LANDING PAGE ---
+                        subgraph Landing_Page ["🌐 Public Interface"]
+                            direction TB
+                            INDEX["index.php<br/>Landing Root"]
+                            NAV["Header Nav"]
+                            HERO["Hero Section"]
+                            FEAT["Features"]
+                            CONTACT["📧 Contact Form"]
+                            
+                            INDEX --> NAV & HERO & FEAT & CONTACT
+                            
+                            CONTACT --> C_VAL{"Valid?"}
+                            C_VAL -->|Yes| C_OK["✅ Sent"]
+                            C_VAL -->|No| C_ERR["❌ Error"]
+                        end
+
+                        %% --- AUTH ---
+                        subgraph Auth_System ["🔐 Authentication"]
+                            direction TB
+                            LOGIN_PG["login.php"]
+                            NAV --> LOGIN_PG
+                            HERO --> LOGIN_PG
+                            
+                            LOGIN_PG --> AUTH_DEC{"Login/Register?"}
+                            AUTH_DEC -->|Login| L_CHECK{"Verify?"}
+                            AUTH_DEC -->|Register| R_DB["INSERT User"]
+                            
+                            L_CHECK -->|Success| L_SESS["Set Session"]
+                            L_CHECK -->|Fail| LOGIN_PG
+                        end
+
+                        %% --- DASHBOARDS ---
+                        subgraph Dashboards ["🖥️ User Role Dashboards"]
+                            direction TB
+                            L_SESS --> ROLE{"User Role?"}
+                            
+                            ROLE -->|Admin| ADMIN_D["👨‍💼 Admin Dash"]
+                            ROLE -->|Librarian| LIB_D["📚 Lib Dash"]
+                            ROLE -->|Student| STUD_D["👨‍🎓 Student Dash"]
+                            
+                            ADMIN_D --> A_SIDE["Admin Sidebar"]
+                            LIB_D --> L_SIDE["Lib Sidebar"]
+                            STUD_D --> S_SIDE["Student Sidebar"]
+                        end
+
+                        %% --- OPERATIONS ---
+                        subgraph Ops ["⚙️ Operations"]
+                            A_SIDE --> A_OPS["Manage Books<br/>Approve Req"]
+                            L_SIDE --> L_OPS["Issue/Return<br/>Manage Users"]
+                            S_SIDE --> S_OPS["Request Book<br/>History"]
+                            
+                            S_OPS --> REQ["Create Request"]
+                            REQ --> A_OPS
+                        end
+
+                        %% --- DATABASE ---
+                        subgraph Database ["💾 Data Persistence"]
+                            DB_LMS[("LMS DB")]
+                            DB_QR[("QR DB")]
+                        end
+
+                        %% --- CONNECTIONS ---
+                        C_OK --> DB_LMS
+                        R_DB --> DB_LMS & DB_QR
+                        A_OPS --> DB_LMS
+                        L_OPS --> DB_LMS
+                        S_OPS --> DB_LMS
+
+                        %% APPLY CLASSES
+                        class INDEX,NAV,HERO,FEAT,CONTACT,C_OK,C_ERR landing
+                        class LOGIN_PG,R_DB,L_SESS auth
+                        class ADMIN_D,LIB_D,A_SIDE,L_SIDE,A_OPS,L_OPS admin
+                        class STUD_D,S_SIDE,S_OPS,REQ student
+                        class C_VAL,AUTH_DEC,L_CHECK,ROLE logic
+                        class DB_LMS,DB_QR db
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="infoModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Architecture Guide</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p>This Master Flowchart maps the complete user journey through the QRead system.</p>
+                <h3>💡 Controls</h3>
+                <ul>
+                    <li><strong>Pan:</strong> Drag canvas.</li>
+                    <li><strong>Zoom:</strong> Pinch/Wheel.</li>
+                </ul>
+                <h3>🔄 Flow Logic</h3>
+                <p>The flow moves from <strong>Public Access</strong> (Landing) &rarr; <strong>Authentication</strong> &rarr; <strong>Role-Based Dashboards</strong> &rarr; <strong>Database Operations</strong>.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Init Mermaid
+        mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose', flowchart: { curve: 'stepAfter', nodeSpacing: 50, rankSpacing: 60 } });
+
+        // Pan & Zoom
+        const state = { scale: 1, panning: false, pointX: 0, pointY: 0, startX: 0, startY: 0, cssX: 0, cssY: 0 };
+        const container = document.getElementById('canvasContainer');
+        const target = document.getElementById('panZoomArea');
+
+        function centerDiagram() {
+            const wrapperW = container.clientWidth;
+            const wrapperH = container.clientHeight;
+            state.cssX = (wrapperW - 1000) / 2;
+            state.cssY = (wrapperH - 800) / 2;
+            updateTransform();
+        }
+        setTimeout(centerDiagram, 500);
+
+        function updateTransform() {
+            target.style.transform = `translate3d(${state.cssX}px, ${state.cssY}px, 0) scale(${state.scale})`;
+        }
+
+        // Mouse Events
+        container.addEventListener('mousedown', (e) => { state.panning = true; state.startX = e.clientX - state.cssX; state.startY = e.clientY - state.cssY; container.style.cursor = 'grabbing'; });
+        window.addEventListener('mouseup', () => { state.panning = false; container.style.cursor = 'grab'; });
+        window.addEventListener('mousemove', (e) => { if(!state.panning) return; e.preventDefault(); state.cssX = e.clientX - state.startX; state.cssY = e.clientY - state.startY; updateTransform(); });
+
+        // Wheel Zoom
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoom = Math.exp(e.deltaY < 0 ? 0.1 : -0.1);
+            const newScale = state.scale * zoom;
+            if (newScale < 0.2 || newScale > 5) return;
+            const rect = container.getBoundingClientRect();
+            state.cssX -= (e.clientX - rect.left - state.cssX) * (zoom - 1);
+            state.cssY -= (e.clientY - rect.top - state.cssY) * (zoom - 1);
+            state.scale = newScale;
+            updateTransform();
+        });
+
+        // Touch Events
+        let initialDist = null; let lastScale = 1; let initCenter = null; let initCssX = 0; let initCssY = 0;
+        container.addEventListener('touchstart', (e) => {
+            if(e.touches.length === 1) { state.panning = true; state.startX = e.touches[0].clientX - state.cssX; state.startY = e.touches[0].clientY - state.cssY; }
+            else if(e.touches.length === 2) { 
+                state.panning = false; initialDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                lastScale = state.scale;
+                initCenter = { x: (e.touches[0].clientX + e.touches[1].clientX)/2, y: (e.touches[0].clientY + e.touches[1].clientY)/2 };
+                initCssX = state.cssX; initCssY = state.cssY;
+            }
+        }, {passive: false});
+
+        container.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if(e.touches.length === 1 && state.panning) { state.cssX = e.touches[0].clientX - state.startX; state.cssY = e.touches[0].clientY - state.startY; updateTransform(); }
+            else if(e.touches.length === 2 && initialDist) {
+                const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                const newScale = Math.min(Math.max(0.2, lastScale * (dist/initialDist)), 5);
+                state.scale = newScale;
+                const currCenter = { x: (e.touches[0].clientX + e.touches[1].clientX)/2, y: (e.touches[0].clientY + e.touches[1].clientY)/2 };
+                state.cssX = initCssX + (currCenter.x - initCenter.x);
+                state.cssY = initCssY + (currCenter.y - initCenter.y);
+                updateTransform();
+            }
+        }, {passive: false});
+        container.addEventListener('touchend', () => { state.panning = false; initialDist = null; });
+
+        // Controls
+        window.zoomIn = () => { if(state.scale < 5) { state.scale *= 1.2; updateTransform(); } };
+        window.zoomOut = () => { if(state.scale > 0.4) { state.scale /= 1.2; updateTransform(); } };
+        window.resetView = () => { state.scale = 1; centerDiagram(); };
+        window.toggleLegend = () => document.getElementById('legendCard').classList.toggle('collapsed');
+        window.openModal = () => document.getElementById('infoModal').classList.add('show');
+        window.closeModal = () => document.getElementById('infoModal').classList.remove('show');
+
+        // Download
+        window.downloadDiagram = (fmt) => {
+            const svg = document.querySelector('.mermaid svg');
+            if(!svg) return;
+            const bbox = svg.getBBox();
+            const clone = svg.cloneNode(true);
+            clone.setAttribute('viewBox', `${bbox.x - 20} ${bbox.y - 20} ${bbox.width + 40} ${bbox.height + 40}`);
+            clone.setAttribute('width', bbox.width + 40);
+            clone.setAttribute('height', bbox.height + 40);
+            clone.style.background = 'white';
+            const blob = new Blob([new XMLSerializer().serializeToString(clone)], {type: 'image/svg+xml;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            if(fmt === 'svg') {
+                const a = document.createElement('a'); a.href = url; a.download = 'flowchart.svg'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            } else {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = (bbox.width + 40) * 2; canvas.height = (bbox.height + 40) * 2;
+                    const ctx = canvas.getContext('2d'); ctx.scale(2,2); ctx.fillStyle='white'; ctx.fillRect(0,0,canvas.width,canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    canvas.toBlob(b => {
+                        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'flowchart.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    });
+                };
+                img.src = url;
+            }
+        };
+    </script>
+</body>
+</html>

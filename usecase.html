@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QRead LMS - Use Case Diagram</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338ca;
+            --accent: #06b6d4;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --modal-overlay: rgba(15, 23, 42, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--dark);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Prevent default browser scroll */
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            padding: 20px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- Main Layout --- */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+        }
+
+        /* --- Header --- */
+        .header {
+            padding: 16px 32px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .header-title h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 2px;
+            margin-left: 34px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+        }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+        .btn-secondary {
+            background: white;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+        .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; color: var(--dark); }
+
+        .badge {
+            background: #e0e7ff;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid #c7d2fe;
+        }
+
+        /* --- Canvas Wrapper --- */
+        .canvas-wrapper {
+            flex-grow: 1;
+            position: relative;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow: hidden; 
+            touch-action: none; 
+            cursor: grab;
+        }
+        
+        .canvas-wrapper:active {
+            cursor: grabbing;
+        }
+
+        /* UPDATED: Container that holds the diagram (Blur Fix) */
+        .pan-zoom-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-origin: 0 0; 
+            transform: translateZ(0); 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* --- Floating Controls (Zoom) --- */
+        .floating-controls {
+            position: absolute;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.8);
+            z-index: 50;
+        }
+
+        .control-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            color: #475569;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .control-btn:hover { background: #f1f5f9; color: var(--primary); }
+
+        /* --- Floating Legend --- */
+        .legend-card {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 260px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255,255,255,0.6);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 40;
+        }
+
+        .legend-card.collapsed {
+            width: auto;
+            height: auto;
+        }
+
+        .legend-header {
+            padding: 12px 16px;
+            background: rgba(248, 250, 252, 0.8);
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .legend-title { font-size: 0.85rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+        
+        .legend-toggle-icon { transition: transform 0.3s; font-size: 0.8rem; color: #64748b; }
+        .legend-card.collapsed .legend-toggle-icon { transform: rotate(180deg); }
+        .legend-card.collapsed .legend-body { display: none; }
+        .legend-card.collapsed .legend-title span { display: none; }
+
+        .legend-body { padding: 16px; }
+
+        .legend-item { display: flex; align-items: center; margin-bottom: 14px; font-size: 0.8rem; color: #475569; font-weight: 500; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 3px; margin-right: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.show { display: flex; opacity: 1; }
+
+        .modal-card {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s;
+            overflow: hidden;
+            max-height: 80vh;
+        }
+        .modal-overlay.show .modal-card { transform: translateY(0); }
+
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .modal-header h2 { font-size: 1.2rem; color: var(--dark); font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer; }
+
+        .modal-content { padding: 24px; overflow-y: auto; color: #334155; line-height: 1.6; font-size: 0.95rem; }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            body { padding: 0; }
+            .app-container { border-radius: 0; border: none; height: 100vh; }
+            .header { padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+            .header-controls { width: 100%; overflow-x: auto; padding-bottom: 4px; gap: 8px; }
+            .legend-card { top: auto; bottom: 80px; right: 16px; width: auto; min-width: 150px; }
+            .floating-controls { bottom: 20px; width: auto; }
+            .header-controls .badge { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="header-title">
+                <h1><i class="fas fa-users-cog" style="color: var(--primary);"></i> QRead LMS</h1>
+                <p>Use Case Diagram (v2.0)</p>
+            </div>
+            <div class="header-controls">
+                <span class="badge">Live View</span>
+                <button onclick="openModal()" class="btn btn-primary">
+                    <i class="fas fa-info-circle"></i> Info
+                </button>
+                <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 4px;"></div>
+                <button onclick="downloadDiagram('png')" class="btn btn-secondary">
+                    <i class="fas fa-download"></i> PNG
+                </button>
+                <a href="index.html" class="btn btn-secondary" style="color: #ef4444; border-color: #fca5a5;">
+                    <i class="fas fa-times"></i> Exit
+                </a>
+            </div>
+        </header>
+
+        <div class="canvas-wrapper" id="canvasContainer">
+            
+            <div class="floating-controls">
+                <button class="control-btn" onclick="zoomOut()" title="Zoom Out"><i class="fas fa-minus"></i></button>
+                <button class="control-btn" onclick="resetView()" title="Reset View"><i class="fas fa-compress-arrows-alt"></i></button>
+                <button class="control-btn" onclick="zoomIn()" title="Zoom In"><i class="fas fa-plus"></i></button>
+            </div>
+
+            <div class="legend-card" id="legendCard">
+                <div class="legend-header" onclick="toggleLegend()">
+                    <div class="legend-title"><i class="fas fa-list-ul"></i> <span>Roles</span></div>
+                    <i class="fas fa-chevron-down legend-toggle-icon"></i>
+                </div>
+                <div class="legend-body">
+                    <div class="legend-item"><div class="legend-dot" style="background:#dbeafe; border:1px solid #2563eb"></div> Student</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#ffedd5; border:1px solid #ea580c"></div> Admin</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#dcfce7; border:1px solid #16a34a"></div> Librarian</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#fce7f3; border:1px solid #db2777"></div> System</div>
+                    <div style="margin-top: 10px; font-size: 0.75rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                        Actors &rarr; Actions
+                    </div>
+                </div>
+            </div>
+
+            <div class="pan-zoom-container" id="panZoomArea">
+                <div class="mermaid">
+                    %%{init: {
+                        'theme': 'base',
+                        'themeVariables': {
+                            'primaryColor': '#ffffff',
+                            'primaryBorderColor': '#cbd5e1',
+                            'primaryTextColor': '#1e293b',
+                            'lineColor': '#64748b',
+                            'fontFamily': 'Inter'
+                        }
+                    }}%%
+                    graph TB
+                        %% Styling
+                        classDef studentActor fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+                        classDef adminActor fill:#ffedd5,stroke:#ea580c,stroke-width:2px
+                        classDef libActor fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                        classDef sysActor fill:#fce7f3,stroke:#db2777,stroke-width:2px
+                        classDef ucNode fill:#ffffff,stroke:#94a3b8,stroke-width:1px,rx:20,ry:20
+
+                        %% Student Lane
+                        subgraph S_LANE ["Student Context"]
+                            direction TB
+                            ST[("👨‍🎓 Student")]
+                            S1("🔐 Login")
+                            S2("📖 Search Books")
+                            S3("📤 Request Issue")
+                            S4("🔄 Request Renew")
+                            S5("↩️ Request Return")
+                            S6("📱 Scan QR Code")
+                        end
+
+                        %% Admin Lane
+                        subgraph A_LANE ["Admin Context"]
+                            direction TB
+                            AD[("👨‍💼 Admin")]
+                            A1("📝 Manage Books")
+                            A2("✔️ Approve Requests")
+                            A3("👥 Manage Students")
+                            A4("📊 View Reports")
+                            A5("🔔 Send Alerts")
+                        end
+
+                        %% Librarian Lane
+                        subgraph L_LANE ["Librarian Context"]
+                            direction TB
+                            LB[("📚 Librarian")]
+                            L1("✔️ Approve Issue/Return")
+                            L2("📖 Catalog Mgmt")
+                        end
+
+                        %% System Lane
+                        subgraph SYS_LANE ["System Automation"]
+                            direction TB
+                            SYS[("🖥️ System")]
+                            SY1("⏰ Auto-Expire")
+                            SY2("📨 Email Notify")
+                        end
+
+                        %% Relationships
+                        ST --> S1 & S2 & S3 & S4 & S5 & S6
+                        
+                        AD --> S1
+                        AD --> A1 & A2 & A3 & A4 & A5
+                        
+                        LB --> S1
+                        LB --> L1 & L2
+                        
+                        SYS --> SY1 & SY2
+
+                        %% Apply Styles
+                        class ST studentActor
+                        class AD adminActor
+                        class LB libActor
+                        class SYS sysActor
+                        class S1,S2,S3,S4,S5,S6,A1,A2,A3,A4,A5,L1,L2,SY1,SY2 ucNode
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="infoModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Interaction Guide</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p>This Use Case Diagram outlines the functional requirements of QRead LMS by User Role.</p>
+                <h3>💡 Controls</h3>
+                <ul>
+                    <li><strong>Pan:</strong> Click/Touch and drag to move.</li>
+                    <li><strong>Zoom:</strong> Pinch (Mobile) or Wheel (Desktop).</li>
+                </ul>
+                <h3>👥 Actors & Capabilities</h3>
+                <ul>
+                    <li><strong>Student (Blue):</strong> Core borrowing workflows and QR scanning.</li>
+                    <li><strong>Admin (Orange):</strong> Full system control, approvals, and reporting.</li>
+                    <li><strong>Librarian (Green):</strong> Operational focus on book circulation.</li>
+                    <li><strong>System (Pink):</strong> Background automation jobs.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Mermaid Initialization ---
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'base',
+            securityLevel: 'loose',
+            flowchart: { curve: 'basis' }
+        });
+
+        // --- 2. Infinite Canvas Logic (Sharp Rendering) ---
+        const state = {
+            scale: 1,
+            panning: false,
+            pointX: 0, pointY: 0,
+            startX: 0, startY: 0,
+            cssX: 0, cssY: 0
+        };
+
+        const container = document.getElementById('canvasContainer');
+        const target = document.getElementById('panZoomArea');
+
+        function centerDiagram() {
+            const wrapperW = container.clientWidth;
+            const wrapperH = container.clientHeight;
+            const targetW = target.clientWidth || 1000;
+            const targetH = target.clientHeight || 800;
+            state.cssX = (wrapperW - targetW) / 2;
+            state.cssY = (wrapperH - targetH) / 2;
+            updateTransform();
+        }
+
+        setTimeout(centerDiagram, 500);
+
+        function updateTransform() {
+            target.style.transform = `translate3d(${state.cssX}px, ${state.cssY}px, 0) scale(${state.scale})`;
+        }
+
+        // --- Mouse Events (Desktop) ---
+        container.addEventListener('mousedown', (e) => {
+            state.panning = true;
+            state.startX = e.clientX - state.cssX;
+            state.startY = e.clientY - state.cssY;
+            container.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mouseup', () => {
+            state.panning = false;
+            container.style.cursor = 'grab';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!state.panning) return;
+            e.preventDefault();
+            state.cssX = e.clientX - state.startX;
+            state.cssY = e.clientY - state.startY;
+            updateTransform();
+        });
+
+        // --- Wheel Zoom ---
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomIntensity = 0.1;
+            const wheel = e.deltaY < 0 ? 1 : -1;
+            const zoom = Math.exp(wheel * zoomIntensity);
+            const newScale = state.scale * zoom;
+            if (newScale < 0.2 || newScale > 5) return;
+
+            const rect = container.getBoundingClientRect();
+            const offsetX = e.clientX - rect.left;
+            const offsetY = e.clientY - rect.top;
+
+            state.cssX -= (offsetX - state.cssX) * (zoom - 1);
+            state.cssY -= (offsetY - state.cssY) * (zoom - 1);
+            state.scale = newScale;
+            updateTransform();
+        });
+
+        // --- Touch Events (Mobile) ---
+        let initialPinchDistance = null;
+        let lastScale = 1;
+        let initialCenter = null;
+        let initialCssX = 0; let initialCssY = 0;
+
+        container.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                state.panning = true;
+                state.startX = e.touches[0].clientX - state.cssX;
+                state.startY = e.touches[0].clientY - state.cssY;
+            } else if (e.touches.length === 2) {
+                state.panning = false;
+                initialPinchDistance = getDistance(e.touches);
+                lastScale = state.scale;
+                initialCenter = {
+                    x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                    y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+                };
+                initialCssX = state.cssX;
+                initialCssY = state.cssY;
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1 && state.panning) {
+                state.cssX = e.touches[0].clientX - state.startX;
+                state.cssY = e.touches[0].clientY - state.startY;
+                updateTransform();
+            } else if (e.touches.length === 2 && initialPinchDistance) {
+                const currentDistance = getDistance(e.touches);
+                const ratio = currentDistance / initialPinchDistance;
+                const newScale = Math.min(Math.max(0.2, lastScale * ratio), 5);
+                state.scale = newScale;
+                
+                // Simple pinch center adjustment
+                const currentCenter = {
+                    x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                    y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+                };
+                const moveX = currentCenter.x - initialCenter.x;
+                const moveY = currentCenter.y - initialCenter.y;
+                state.cssX = initialCssX + moveX; 
+                state.cssY = initialCssY + moveY;
+
+                updateTransform();
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchend', () => {
+            state.panning = false;
+            initialPinchDistance = null;
+        });
+
+        function getDistance(touches) {
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // --- Controls ---
+        window.zoomIn = function() {
+            if (state.scale < 5) {
+                state.scale *= 1.2;
+                const rect = container.getBoundingClientRect();
+                state.cssX -= (rect.width/2 - state.cssX) * (0.2);
+                state.cssY -= (rect.height/2 - state.cssY) * (0.2);
+                updateTransform();
+            }
+        };
+
+        window.zoomOut = function() {
+            if (state.scale > 0.4) {
+                state.scale /= 1.2;
+                const rect = container.getBoundingClientRect();
+                state.cssX -= (rect.width/2 - state.cssX) * (1/1.2 - 1);
+                state.cssY -= (rect.height/2 - state.cssY) * (1/1.2 - 1);
+                updateTransform();
+            }
+        };
+
+        window.resetView = function() {
+            state.scale = 1;
+            centerDiagram();
+        };
+
+        window.toggleLegend = function() {
+            document.getElementById('legendCard').classList.toggle('collapsed');
+        }
+
+        window.openModal = function() {
+            document.getElementById('infoModal').classList.add('show');
+        }
+
+        window.closeModal = function() {
+            document.getElementById('infoModal').classList.remove('show');
+        }
+
+        // --- Download ---
+        window.downloadDiagram = function(format) {
+            const svgElement = document.querySelector('.mermaid svg');
+            if (!svgElement) { alert('Diagram loading...'); return; }
+
+            const bbox = svgElement.getBBox();
+            const width = bbox.width + 40;
+            const height = bbox.height + 40;
+            const clonedSvg = svgElement.cloneNode(true);
+            
+            clonedSvg.setAttribute('viewBox', `${bbox.x - 20} ${bbox.y - 20} ${width} ${height}`);
+            clonedSvg.setAttribute('width', width);
+            clonedSvg.setAttribute('height', height);
+            clonedSvg.style.backgroundColor = 'white';
+
+            const svgString = new XMLSerializer().serializeToString(clonedSvg);
+            const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qread-usecase.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+    </script>
+</body>
+</html>

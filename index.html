@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRead LMS - System Architecture</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4F46E5; /* Modern Indigo */
+            --primary-hover: #4338ca;
+            --secondary: #64748b;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            /* Animated Gradient Background */
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Layout Updates for 4 Columns --- */
+        .container {
+            /* Increased max-width to fit 4 columns comfortably */
+            max-width: 1400px; 
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-top: 20px;
+            color: white;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .pill-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            font-weight: 300;
+        }
+
+        /* --- 4 Column Grid Configuration --- */
+        .cards-grid {
+            display: grid;
+            gap: 24px;
+            margin-bottom: 60px;
+            /* Default: Responsive wrapping for mobile/tablet */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        /* LARGE SCREEN OVERRIDE: Force 4 Columns */
+        @media (min-width: 1200px) {
+            .cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* --- Card Styles --- */
+        .card {
+            background: var(--glass-bg);
+            border-radius: 20px; /* Slightly smaller radius for tighter fit */
+            border: var(--glass-border);
+            box-shadow: var(--shadow-sm);
+            padding: 24px; /* Reduced padding slightly to save space */
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: fadeIn 0.8s ease-out backwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Gradient Top Borders */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 5px;
+        }
+        .card.flowchart::before { background: linear-gradient(90deg, #F59E0B, #FCD34D); }
+        .card.erd::before { background: linear-gradient(90deg, #10B981, #34D399); }
+        .card.dfd::before { background: linear-gradient(90deg, #3B82F6, #60A5FA); }
+        .card.usecase::before { background: linear-gradient(90deg, #EC4899, #F472B6); }
+
+        .card-icon-wrapper {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 18px;
+        }
+
+        .flowchart .card-icon-wrapper { background: #fffbeb; color: #d97706; }
+        .erd .card-icon-wrapper { background: #ecfdf5; color: #059669; }
+        .dfd .card-icon-wrapper { background: #eff6ff; color: #2563eb; }
+        .usecase .card-icon-wrapper { background: #fdf2f8; color: #db2777; }
+
+        .card-content { flex-grow: 1; }
+
+        .card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--dark);
+        }
+
+        .card-subtitle {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .feature-list li {
+            list-style: none;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .feature-list li i { margin-right: 8px; color: var(--primary); font-size: 0.7rem; }
+
+        /* Buttons */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--dark);
+            color: white;
+        }
+        .btn-primary:hover { background-color: #000; }
+        .btn-outline {
+            background-color: white;
+            color: var(--dark);
+            border: 1px solid #e2e8f0;
+        }
+        .btn-outline:hover { background-color: #f8fafc; border-color: #cbd5e1; }
+
+        /* Info Section */
+        .info-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+            animation: fadeIn 1s ease-out;
+        }
+
+        .info-header h2 { font-size: 1.5rem; color: var(--dark); margin-bottom: 10px; }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .info-item h4 { font-size: 1rem; margin-bottom: 8px; color: var(--dark); }
+        .info-item p { font-size: 0.9rem; color: var(--secondary); }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+        }
+
+        /* --- Mobile Tweaks --- */
+        @media (max-width: 1024px) {
+            /* On tablets, fall back to 2 columns */
+            .cards-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 640px) {
+            /* On mobile, 1 column */
+            .cards-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <span class="pill-badge">Documentation</span>
+            <h1>QRead LMS Architecture</h1>
+            <p>System logic, database design, and user flows.</p>
+        </header>
+
+        <main class="cards-grid">
+            
+            <div class="card flowchart">
+                <div class="card-icon-wrapper">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-subtitle">Architecture</span>
+                    <h3>Flowchart</h3>
+                    <p>Complete user journey from landing to dashboard.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-circle"></i> Auth Flows</li>
+                        <li><i class="fas fa-circle"></i> Dashboard Logic</li>
+                    </ul>
+                </div>
+                <div class="btn-group">
+                    <a href="flowchart.html" class="btn btn-primary">View</a>
+                    <a href="flowchart.html" download class="btn btn-outline"><i class="fas fa-download"></i></a>
+                </div>
+            </div>
+
+            <div class="card erd">
+                <div class="card-icon-wrapper">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-subtitle">Database</span>
+                    <h3>ER Diagram</h3>
+                    <p>SQL schema, keys, and table relationships.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-circle"></i> Schema Map</li>
+                        <li><i class="fas fa-circle"></i> Key Constraints</li>
+                    </ul>
+                </div>
+                <div class="btn-group">
+                    <a href="erd.html" class="btn btn-primary">View</a>
+                    <a href="erd.html" download class="btn btn-outline"><i class="fas fa-download"></i></a>
+                </div>
+            </div>
+
+            <div class="card dfd">
+                <div class="card-icon-wrapper">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-subtitle">Process</span>
+                    <h3>Data Flow</h3>
+                    <p>Input/Output movement and data stores.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-circle"></i> Level 0 & 1</li>
+                        <li><i class="fas fa-circle"></i> Process Logic</li>
+                    </ul>
+                </div>
+                <div class="btn-group">
+                    <a href="dfd.html" class="btn btn-primary">View</a>
+                    <a href="dfd.html" download class="btn btn-outline"><i class="fas fa-download"></i></a>
+                </div>
+            </div>
+
+            <div class="card usecase">
+                <div class="card-icon-wrapper">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-subtitle">Interaction</span>
+                    <h3>Use Case</h3>
+                    <p>Actor interactions and system boundaries.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-circle"></i> User Actions</li>
+                        <li><i class="fas fa-circle"></i> Admin Roles</li>
+                    </ul>
+                </div>
+                <div class="btn-group">
+                    <a href="usecase.html" class="btn btn-primary">View</a>
+                    <a href="usecase.html" download class="btn btn-outline"><i class="fas fa-download"></i></a>
+                </div>
+            </div>
+
+        </main>
+
+        <section class="info-section">
+            <div class="info-header">
+                <h2>Technical Documentation</h2>
+                <p>Guides and details regarding the diagrams.</p>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4><i class="fas fa-layer-group"></i> Architecture</h4>
+                    <p>UML 2.0 standard notation for cross-functional understanding.</p>
+                </div>
+                <div class="info-item">
+                    <h4><i class="fas fa-mouse-pointer"></i> Interactive</h4>
+                    <p>Pan & Zoom capabilities enabled for all visualization charts.</p>
+                </div>
+                <div class="info-item">
+                    <h4><i class="fas fa-file-export"></i> High Res</h4>
+                    <p>Download vector (SVG) or PNG versions for external reports.</p>
+                </div>
+                <div class="info-item">
+                    <h4><i class="fas fa-shield-alt"></i> Secure</h4>
+                    <p>Authentication and encryption endpoints explicitly mapped.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>&copy; 2026 QRead LMS. All rights reserved.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
